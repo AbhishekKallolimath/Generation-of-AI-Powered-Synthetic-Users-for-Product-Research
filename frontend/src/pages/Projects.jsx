@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 function Projects() {
   return (
     <div>
@@ -21,9 +22,12 @@ function Projects() {
           synthetic users.
         </p>
 
-        <button className="mt-6 px-5 py-3 rounded-lg bg-gray-900 text-white font-medium hover:bg-gray-800">
-          Create Project
-        </button>
+        <Link
+  to="/projects/new"
+  className="inline-block mt-6 px-5 py-3 rounded-lg bg-gray-900 text-white font-medium hover:bg-gray-800"
+>
+  Create Project
+</Link>
       </div>
     </div>
   );
