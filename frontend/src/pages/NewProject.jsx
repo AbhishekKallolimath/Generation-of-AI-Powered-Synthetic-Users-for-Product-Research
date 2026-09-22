@@ -1,4 +1,53 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../services/api";
+
 function NewProject() {
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    name: "",
+    product_description: "",
+    target_audience: "",
+    research_objectives: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  function handleChange(event) {
+    const { name, value } = event.target;
+
+    setFormData((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await api.post("/projects/", formData);
+
+      console.log("Project created:", response.data);
+
+      navigate("/projects");
+    } catch (err) {
+      console.error("Project creation failed:", err);
+
+      setError(
+        err.response?.data?.detail ||
+          "Unable to create the project. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="max-w-4xl">
       <div className="mb-8">
@@ -12,7 +61,10 @@ function NewProject() {
         </p>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-8">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white rounded-xl border border-gray-200 p-8"
+      >
         <div className="space-y-6">
 
           <div>
@@ -22,7 +74,11 @@ function NewProject() {
 
             <input
               type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
               placeholder="e.g. FinWise User Research"
+              required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
             />
           </div>
@@ -33,8 +89,12 @@ function NewProject() {
             </label>
 
             <textarea
+              name="product_description"
+              value={formData.product_description}
+              onChange={handleChange}
               rows="5"
               placeholder="Describe the product, its purpose, and the problem it solves..."
+              required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
             />
           </div>
@@ -45,8 +105,12 @@ function NewProject() {
             </label>
 
             <textarea
+              name="target_audience"
+              value={formData.target_audience}
+              onChange={handleChange}
               rows="4"
-              placeholder="Describe your target users, their age group, occupation, lifestyle, or other relevant characteristics..."
+              placeholder="Describe your target users..."
+              required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
             />
           </div>
@@ -57,23 +121,34 @@ function NewProject() {
             </label>
 
             <textarea
+              name="research_objectives"
+              value={formData.research_objectives}
+              onChange={handleChange}
               rows="4"
               placeholder="What do you want to learn from the synthetic users?"
+              required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
             />
           </div>
 
+          {error && (
+            <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700">
+              {error}
+            </div>
+          )}
+
           <div className="pt-4 border-t border-gray-200">
             <button
-              type="button"
-              className="px-6 py-3 rounded-lg bg-gray-900 text-white font-medium hover:bg-gray-800"
+              type="submit"
+              disabled={loading}
+              className="px-6 py-3 rounded-lg bg-gray-900 text-white font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create Research Project
+              {loading ? "Creating Project..." : "Create Research Project"}
             </button>
           </div>
 
         </div>
-      </div>
+      </form>
     </div>
   );
 }
