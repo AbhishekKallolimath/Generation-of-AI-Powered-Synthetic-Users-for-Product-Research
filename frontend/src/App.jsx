@@ -3,6 +3,8 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import NewProject from "./pages/NewProject";
+import Personas from "./pages/Personas";
+
 
 
 function App() {
@@ -13,6 +15,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/new" element={<NewProject />} /> 
+          <Route path="/personas" element={<Personas />} />
         </Route>
       </Routes>
     </BrowserRouter>
