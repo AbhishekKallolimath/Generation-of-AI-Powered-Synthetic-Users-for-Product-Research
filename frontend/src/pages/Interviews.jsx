@@ -28,11 +28,11 @@ function Interviews() {
 
     try {
       const response = await api.post("/interviews/chat", {
-        product: "FinWise - AI Financial Copilot",
-        persona: selectedPersona,
-        question: question,
-        history: messages,
-      });
+  product: "FitTrack - AI Fitness and Workout Assistant",
+  persona: selectedPersona,
+  question: question,
+  history: messages,
+});
 
       setMessages(response.data.history);
       setQuestion("");

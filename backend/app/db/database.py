@@ -4,19 +4,27 @@ from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 
 
-engine = create_engine(
-    settings.database_url,
-    pool_pre_ping=True,
-)
+engine = None
+SessionLocal = None
 
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
-)
+
+if settings.database_url and settings.database_url != "your_database_url_here":
+    engine = create_engine(
+        settings.database_url,
+        pool_pre_ping=True,
+    )
+
+    SessionLocal = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine,
+    )
 
 
 def get_db():
+    if SessionLocal is None:
+        raise RuntimeError("Database is not configured.")
+
     db = SessionLocal()
 
     try:

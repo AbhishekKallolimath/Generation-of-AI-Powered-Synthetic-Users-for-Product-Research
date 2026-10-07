@@ -105,6 +105,18 @@ function Surveys() {
       });
 
       setResponses(response.data.responses);
+
+localStorage.setItem(
+  "survey_responses",
+  JSON.stringify(response.data.responses)
+);
+
+localStorage.setItem(
+  "survey_product",
+  selectedScenario.product
+);
+
+
     } catch (err) {
       console.error("Survey failed:", err);
 

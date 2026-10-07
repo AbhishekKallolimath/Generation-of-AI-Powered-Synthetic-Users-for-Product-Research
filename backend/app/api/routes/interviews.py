@@ -15,10 +15,11 @@ class InterviewRequest(BaseModel):
 @router.post("/chat")
 def interview_chat(request: InterviewRequest):
     response = generate_survey_response(
-        product=request.product,
-        persona=request.persona,
-        question=request.question,
-    )
+    product=request.product,
+    persona=request.persona,
+    question=request.question,
+    history=request.history,
+)
 
     return {
         "persona_name": request.persona.get("name"),
