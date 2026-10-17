@@ -98,7 +98,7 @@ function Surveys() {
     setValidationResults([]);
 
     try {
-      const response = await api.post("/surveys/run", {
+      const response = await api.post("/api/v1/surveys/run", {
         product: selectedScenario.product,
         question,
         personas,
