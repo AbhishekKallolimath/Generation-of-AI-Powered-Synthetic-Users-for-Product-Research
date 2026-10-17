@@ -6,3 +6,4 @@ pydantic
 pydantic-settings
 google-generativeai
 sqlalchemy
+google-genai
