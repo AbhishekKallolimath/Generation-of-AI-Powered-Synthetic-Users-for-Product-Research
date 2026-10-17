@@ -14,7 +14,7 @@ function Personas() {
       const generated = [];
 
       for (let i = 0; i < 3; i++) {
-        const response = await api.post("/personas/generate", {
+        const response = await api.post("/api/v1/personas/generate", {
           product: "FinWise - AI Financial Copilot for Irregular-Income Workers",
           target_audience:
             "Freelancers, creators, gig workers and independent professionals aged 22-40",
