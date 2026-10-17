@@ -1,9 +1,78 @@
 import { useState } from "react";
 import api from "../services/api";
 
+
+
+
 function Insights() {
   const [loading, setLoading] = useState(false);
   const [insights, setInsights] = useState(null);
+    const [reportLoading, setReportLoading] = useState(false);
+
+  const downloadReport = async () => {
+    setReportLoading(true);
+
+    try {
+      const responses = JSON.parse(
+        localStorage.getItem("survey_responses") || "[]"
+      );
+
+      const product =
+        localStorage.getItem("survey_product") ||
+        "FinWise - AI Financial Copilot";
+
+      if (responses.length === 0) {
+        alert("Please run a survey before generating the report.");
+        return;
+      }
+
+      // Generate insights if they are not already available.
+      let reportInsights = insights;
+
+      if (!reportInsights) {
+        const insightResponse = await api.post("/insights/analyze", {
+          product,
+          responses,
+        });
+
+        reportInsights = insightResponse.data;
+        setInsights(reportInsights);
+      }
+
+      const reportResponse = await api.post(
+        "/reports/generate",
+        {
+          product,
+          personas: [],
+          responses,
+          insights: reportInsights,
+        },
+        {
+          responseType: "blob",
+        }
+      );
+
+      const pdfUrl = window.URL.createObjectURL(
+        new Blob([reportResponse.data], {
+          type: "application/pdf",
+        })
+      );
+
+      const link = document.createElement("a");
+      link.href = pdfUrl;
+      link.download = "research_report.pdf";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      window.URL.revokeObjectURL(pdfUrl);
+    } catch (error) {
+      console.error("Report generation failed:", error);
+      alert("Failed to generate the report. Please try again.");
+    } finally {
+      setReportLoading(false);
+    }
+  };
 
   const analyzeInsights = async () => {
     setLoading(true);
@@ -53,20 +122,84 @@ function Insights() {
         {loading ? "Analyzing..." : "Generate Insights"}
       </button>
 
+
+      <button
+        onClick={downloadReport}
+        disabled={reportLoading || loading}
+        className="bg-green-600 text-white px-5 py-3 rounded-lg mb-6 ml-3 disabled:opacity-50"
+      >
+        {reportLoading ? "Generating PDF..." : "Download Research Report"}
+      </button>
+
+
       {insights && (
         <div className="space-y-6">
 
+          
           <div className="border rounded-lg p-5">
             <h2 className="text-xl font-bold mb-3">
               Recurring Themes
             </h2>
 
-            <ul className="list-disc ml-5">
+            <div className="space-y-4">
               {insights.themes.map((theme, index) => (
-                <li key={index}>{theme}</li>
+                <div
+                  key={index}
+                  className="border rounded-lg p-4"
+                >
+                  <div className="flex justify-between items-start gap-3">
+                    <h3 className="font-semibold">
+                      {theme.name}
+                    </h3>
+
+                    <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full whitespace-nowrap">
+                      {theme.mentions} mentions
+                    </span>
+                  </div>
+
+                  <p className="text-gray-600 mt-2">
+                    {theme.description}
+                  </p>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
+
+          <div className="border rounded-lg p-5">
+            <h2 className="text-xl font-bold mb-3">
+              Key Persona Quotes
+            </h2>
+
+            <div className="space-y-4">
+              {(insights.key_quotes || []).map((item, index) => (
+                <div
+                  key={index}
+                  className="border-l-4 border-blue-500 pl-4 py-2"
+                >
+                  <p className="italic text-gray-700">
+                    "{item.quote}"
+                  </p>
+
+                  <p className="font-semibold mt-2">
+                    {item.persona_name}
+                  </p>
+
+                  <p className="text-sm text-gray-500">
+                    Theme: {item.theme}
+                  </p>
+                </div>
+              ))}
+
+              {(!insights.key_quotes ||
+                insights.key_quotes.length === 0) && (
+                <p className="text-gray-500">
+                  No key quotes available.
+                </p>
+              )}
+            </div>
+          </div>
+
+
 
           <div className="border rounded-lg p-5">
             <h2 className="text-xl font-bold mb-3">
@@ -121,25 +254,73 @@ function Insights() {
             </ul>
           </div>
 
+          
           <div className="border rounded-lg p-5">
-            <h2 className="text-xl font-bold mb-3">
-              Would Use This Product?
+            <h2 className="text-xl font-bold mb-2">
+              Product Validation Score
             </h2>
 
-            <p className="text-4xl font-bold text-blue-600 mb-3">
-              {insights.would_use_score}%
+            <p className="text-sm text-gray-500 mb-4">
+              AI-estimated interest based on the supplied research responses.
+              This is not a measure of actual market demand.
             </p>
 
+            <div className="flex items-center gap-5 mb-5">
+              <div className="relative w-28 h-28 shrink-0">
+                <svg
+                  viewBox="0 0 120 120"
+                  className="w-full h-full -rotate-90"
+                >
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="48"
+                    fill="none"
+                    stroke="#e5e7eb"
+                    strokeWidth="12"
+                  />
+
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="48"
+                    fill="none"
+                    stroke="#2563eb"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                    strokeDasharray={`${(Math.max(0, Math.min(100, insights.would_use_score || 0)) / 100) * 301.59} 301.59`}
+                  />
+                </svg>
+
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-2xl font-bold">
+                    {insights.would_use_score}%
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg">
+                  Estimated Interest
+                </h3>
+
+                <p className="text-gray-600 text-sm">
+                  Based on the responses analyzed by the AI insight agent.
+                </p>
+              </div>
+            </div>
+
             <h3 className="font-semibold mb-2">
-              Reasoning
+              Supporting Reasoning
             </h3>
 
-            <ul className="list-disc ml-5">
-              {insights.would_use_reasoning.map((reason, index) => (
+            <ul className="list-disc ml-5 space-y-2">
+              {(insights.would_use_reasoning || []).map((reason, index) => (
                 <li key={index}>{reason}</li>
               ))}
             </ul>
           </div>
+
 
         </div>
       )}

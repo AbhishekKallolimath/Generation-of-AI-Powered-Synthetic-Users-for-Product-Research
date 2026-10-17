@@ -9,6 +9,7 @@ import Personas from "./pages/Personas";
 import Surveys from "./pages/Surveys";
 import Interviews from "./pages/Interviews";
 import Insights from "./pages/Insights";
+import Reports from "./pages/Reports";
 
 
 function App() {
@@ -45,6 +46,11 @@ function App() {
           <Route
             path="/insights"
             element={<Insights />}
+          />
+
+          <Route
+            path="/reports"
+            element={<Reports />}
           />
 
         </Route>
