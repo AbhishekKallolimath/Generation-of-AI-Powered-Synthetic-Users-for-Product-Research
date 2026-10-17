@@ -3,5 +3,6 @@ uvicorn
 reportlab
 python-dotenv
 pydantic
+pydantic-settings
 google-generativeai
 sqlalchemy
