@@ -8,6 +8,15 @@ from app.api.routes.validation import router as validation_router
 from app.api.routes.interviews import router as interviews_router
 from app.api.routes.insights import router as insights_router
 
+from io import BytesIO
+
+from fastapi import HTTPException
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+
+from app.report_generator import generate_research_report
+
+
 app = FastAPI(
     title="Generation of AI Powered Synthetic Users for Product Research",
     version="0.1.0",
@@ -56,3 +65,37 @@ app.include_router(
     personas_router,
     prefix="/api/v1",
 )
+
+
+class ResearchReportRequest(BaseModel):
+    product: str
+    personas: list = []
+    responses: list = []
+    insights: dict = {}
+
+
+@app.post("/api/v1/reports/generate")
+def generate_report(request: ResearchReportRequest):
+    try:
+        pdf_buffer = generate_research_report(
+            {
+                "product": request.product,
+                "personas": request.personas,
+                "responses": request.responses,
+                "insights": request.insights,
+            }
+        )
+
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": 'attachment; filename="research_report.pdf"'
+            },
+        )
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to generate the research report.",
+        ) from exc
