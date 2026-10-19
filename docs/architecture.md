@@ -425,7 +425,7 @@ Researcher
     ▼
 React Frontend
     │
-    │ POST /projects/{id}/personas/generate
+    │ POST /projects/{id}/api/v1/personas/generate
     ▼
 FastAPI
     │
